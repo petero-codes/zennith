@@ -1,0 +1,149 @@
+"use client";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+const ContactForm = ({ onSubmit }) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm();
+
+  const onSubmitHandler = async (data) => {
+    try {
+      // Show processing toast
+      toast.info("Processing your message...");
+
+      // Send email via API route
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from_name: data.from_name,
+          from_email: data.from_email,
+          message: data.message,
+        }),
+      });
+
+      const result = await response.json();
+
+      // Log the full response for debugging
+      console.log('API Response Status:', response.status);
+      console.log('API Response:', result);
+
+      if (!response.ok) {
+        console.error('API Error:', result);
+        throw new Error(result.error || result.details || 'Failed to send message');
+      }
+
+      // Log success details
+      console.log('Email sent successfully!');
+      console.log('Owner email ID:', result.ownerEmailId);
+      console.log('Auto-reply email ID:', result.autoReplyId);
+      console.log('Auto-reply sent:', result.autoReplySent);
+
+      // Show success toast
+      toast.success("Message sent successfully! I'll get back to you soon.");
+      
+      // Reset form
+      reset();
+      
+      // Call parent onSubmit if provided
+      if (onSubmit) {
+        await onSubmit(data);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error(error.message || "Failed to send message. Please try again later or contact me directly at chapokumih@gmail.com");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-6">
+      <div className="space-y-4">
+        {/* Name and Email in a 2-column grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label htmlFor="from_name" className="text-sm font-medium text-muted-foreground block">
+              Your Name
+            </label>
+            <Input
+              {...register("from_name", { required: "Name is required" })}
+              id="from_name"
+              type="text"
+              name="from_name"
+              placeholder="Your Name"
+              className="rounded-lg border-primary/20 w-full"
+            />
+            {errors.from_name && (
+              <span className="text-xs text-red-500 block mt-1">
+                {errors.from_name.message}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="from_email" className="text-sm font-medium text-muted-foreground block">
+              Email
+            </label>
+            <Input
+              {...register("from_email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address",
+                },
+              })}
+              id="from_email"
+              type="email"
+              name="from_email"
+              placeholder="your.email@example.com"
+              className="rounded-lg border-primary/20 w-full"
+            />
+            {errors.from_email && (
+              <span className="text-xs text-red-500 block mt-1">
+                {errors.from_email.message}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Message field - full width */}
+        <div className="space-y-2">
+          <label htmlFor="message" className="text-sm font-medium text-muted-foreground block">
+            Message
+          </label>
+          <Textarea
+            {...register("message", { required: "Message is required" })}
+            id="message"
+            name="message"
+            placeholder="Write your message here..."
+            className="rounded-lg border-primary/20 min-h-[150px] w-full resize-y"
+          />
+          {errors.message && (
+            <span className="text-xs text-red-500 block mt-1">
+              {errors.message.message}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full rounded-xl py-6 text-base font-semibold mt-6"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Sending..." : "Send Message"}
+      </Button>
+    </form>
+  );
+};
+
+export default ContactForm;
