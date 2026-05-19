@@ -92,3 +92,8 @@ For production use, you should verify your domain:
 
 **That's it!** Your contact form now sends emails automatically without any EmailJS configuration needed.
 
+
+---
+> [!WARNING]
+> **Security Protection Update:** 
+> Please ensure that all your private configuration files (such as .env, .env.local, and any file containing API keys or secrets) are properly added to .gitignore. Private files and secrets should **never** be viewable on GitHub!

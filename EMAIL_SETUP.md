@@ -177,3 +177,8 @@ If you prefer a more professional solution:
 
 Let me know if you want me to set up Resend instead!
 
+
+---
+> [!WARNING]
+> **Security Protection Update:** 
+> Please ensure that all your private configuration files (such as .env, .env.local, and any file containing API keys or secrets) are properly added to .gitignore. Private files and secrets should **never** be viewable on GitHub!
